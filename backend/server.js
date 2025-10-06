@@ -1,0 +1,31 @@
+const express = require("express");
+const connectDB = require("./config/db");
+const cors = require("cors");
+require("dotenv").config();
+
+const AuthRouter = require("./routes/commonRoutes/AuthRoutes")
+
+const app = express();
+
+app.use(cors({
+    origin: ["http://localhost:5173", "http://localhost:5174"]
+}
+));
+app.use(express.json())
+
+app.use("/auth", AuthRouter);
+
+const PORT = process.env.PORT
+
+async function startServer() {
+try {
+    await connectDB();
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`)
+    })
+} catch (err) {
+    console.error("Database connection failed:", err.message)
+}
+}
+
+startServer();

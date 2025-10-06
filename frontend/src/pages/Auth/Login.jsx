@@ -17,7 +17,7 @@ const Signup = () => {
       
         <div className="w-full max-w-md">
           <h2 className="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2">
-            Welcome back
+            Welcome back!
           </h2>
           <p className="text-gray-600 mb-6">
            Log in to track and manage your employees
