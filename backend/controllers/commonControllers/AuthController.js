@@ -42,6 +42,51 @@ const signup = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  try {
+    const { email, password} = req.body;
+
+    const existingUser = await User.findOne({ email });
+    const errorMSG = "Login failed: email or password is wrong";
+
+    if (!existingUser) {
+      return res.status(403).json({ succes: false, message: errorMSG })
+    }
+
+    const isPassEqual = await bcrypt.compare(password, existingUser.password)
+    if (!isPassEqual) {
+      return res.status(403).json({ success: false, message: errorMSG })
+    }
+
+    const jwtToken = jwt.sign(
+      { email: existingUser.email, id: existingUser.id },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    )
+
+    res.cookie("token", jwtToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 24*60*60*1000
+    })
+
+    res.status(200).json({
+      succes: true,
+      message: "Login successful",
+      user: {
+        email: existingUser.email,
+        name: existingUser.name,
+        role: existingUser.role,
+      }
+    })
+  } catch (error) {
+    console.error("Login error:", error)
+    res.status(500).json({ success: false, message: "Server error" })
+  }
+}
+
 module.exports = {
   signup,
+  login,
 };

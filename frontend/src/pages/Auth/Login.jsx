@@ -1,15 +1,50 @@
-import React, { useState } from "react";
-import { FaUser, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../../redux/slices/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
 
-const Signup = () => {
+const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [password, setPassword] = useState("");
+  const [data, setData] = useState({
+    email: "",
+    password: "",
+  })
+
+  const { loading, error, user} = useSelector((state) => state.auth);
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch()
  
 
   function togglePassword() {
     setShowPassword(!showPassword);
   }
+
+  const handleChange = (e) => {
+    setData({ ...data, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    dispatch(loginUser({ email: data.email, password: data.password }));
+  };
+
+  useEffect(() => {
+    if (user ) {
+      toast.success("Login successful ");
+      
+      setTimeout(() => {
+        if (user.role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/");
+        }
+      }, 1500);
+    }
+  }, [user, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row ">
@@ -23,7 +58,7 @@ const Signup = () => {
            Log in to track and manage your employees
           </p>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
            
 
             <div className="flex items-center border-b border-gray-500   px-3 py-2 focus-within:border-b-2 focus-within:border-blue-400 outline-none">
@@ -32,6 +67,10 @@ const Signup = () => {
                 type="email"
                 placeholder="Email Address"
                 className="w-full bg-transparent outline-none"
+                name="email"
+                value={data.email}
+                onChange={handleChange}
+                required
               />
             </div>
 
@@ -40,9 +79,11 @@ const Signup = () => {
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={data.password}
+                onChange={handleChange}
                 className="w-full bg-transparent outline-none"
+                name="password"
+                required
               />
               <button
                 type="button"
@@ -55,9 +96,37 @@ const Signup = () => {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-900 text-white font-semibold py-3 rounded-lg shadow-lg hover:scale-[1.02] transition"
+              disabled={loading}
+              className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-900 text-white font-semibold py-3 rounded-lg shadow-lg transition 
+             ${loading ? "opacity-70 cursor-not-allowed" : "hover:scale-[1.02]"}`}
             >
-              Login
+              {loading ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                    ></path>
+                  </svg>
+                  <span>Loging in...</span>
+                </>
+              ) : (
+                "Login"
+              )}
             </button>
           </form>
 
@@ -84,4 +153,4 @@ const Signup = () => {
   );
 };
 
-export default Signup;
+export default Login;

@@ -33,6 +33,11 @@ const Signup = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    if (data.password.length <4) {
+      toast.error("Password must be at least 4 characters long")
+      return;
+    }
+
     if (data.password !== data.confirmPassword) {
       toast.error("Passwords do not match!");
       return;
@@ -95,6 +100,7 @@ const Signup = () => {
                 value={data.name}
                 onChange={handleOnChange}
                 name="name"
+                required
               />
             </div>
 
@@ -107,6 +113,7 @@ const Signup = () => {
                 value={data.email}
                 onChange={handleOnChange}
                 name="email"
+                required
               />
             </div>
 
@@ -119,6 +126,7 @@ const Signup = () => {
                 onChange={handleOnChange}
                 className="w-full bg-transparent outline-none"
                 name="password"
+                required
               />
               <button
                 type="button"
@@ -138,6 +146,7 @@ const Signup = () => {
                 className="w-full bg-transparent outline-none"
                 onChange={handleOnChange}
                 name="confirmPassword"
+                required
               />
               <button
                 type="button"
