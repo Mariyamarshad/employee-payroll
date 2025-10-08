@@ -31,7 +31,7 @@ export const loginUser = createAsyncThunk(
             { email,password,},
             { withCredentials: true }
             )
-        return res.data
+        return res.data.user
     } catch (err) {
         const message = err.response?.data?.message || "login failed. please try again."
         throw message;
