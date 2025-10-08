@@ -10,13 +10,12 @@ const Login = () => {
   const [data, setData] = useState({
     email: "",
     password: "",
-  })
+  });
 
-  const { loading, error, user} = useSelector((state) => state.auth);
+  const { loading, error, user } = useSelector((state) => state.auth);
 
   const navigate = useNavigate();
-  const dispatch = useDispatch()
- 
+  const dispatch = useDispatch();
 
   function togglePassword() {
     setShowPassword(!showPassword);
@@ -33,12 +32,12 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (user ) {
+    if (user) {
       toast.success("Login successful ");
-      
+
       setTimeout(() => {
         if (user.role === "admin") {
-          navigate("/admin");
+          navigate("/admin/dashboard");
         } else {
           navigate("/");
         }
@@ -49,18 +48,15 @@ const Login = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row ">
       <div className="w-full md:w-1/2 flex items-center justify-center bg-white/90 backdrop-blur-md px-8 md:px-12 rounded-3xl md:rounded-l-3xl md:rounded-r-none shadow-2xl mb-6 md:mb-0">
-      
         <div className="w-full max-w-md">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-teal-700 mb-2">
             Welcome back!
           </h2>
           <p className="text-gray-600 mb-6">
-           Log in to track and manage your employees
+            Log in to track and manage your employees
           </p>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-           
-
             <div className="flex items-center border-b border-gray-500   px-3 py-2 focus-within:border-b-2 focus-within:border-blue-400 outline-none">
               <FaEnvelope className="text-gray-500 mr-2" />
               <input
@@ -97,8 +93,10 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-900 text-white font-semibold py-3 rounded-lg shadow-lg transition 
-             ${loading ? "opacity-70 cursor-not-allowed" : "hover:scale-[1.02]"}`}
+              className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-teal-600 to-teal-950 text-white font-semibold py-3 rounded-lg shadow-lg transition 
+             ${
+               loading ? "opacity-70 cursor-not-allowed" : "hover:scale-[1.02]"
+             }`}
             >
               {loading ? (
                 <>
@@ -134,7 +132,7 @@ const Login = () => {
             Don't have an account?{" "}
             <Link
               to="/sign-up"
-              className="text-blue-600 font-medium hover:underline"
+              className="text-teal-800 font-medium hover:underline"
             >
               Sign Up
             </Link>
@@ -142,12 +140,23 @@ const Login = () => {
         </div>
       </div>
 
-      <div className="w-full md:w-1/2 flex items-center justify-center rounded-3xl md:rounded-r-3xl md:rounded-l-none shadow-2xl overflow-hidden">
-        <img
-          src="/login.jpg"
-          alt="Sign Up Illustration"
-          className="w-full h-64 md:h-full object-cover"
-        />
+      <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-gradient-to-r from-teal-900 to-teal-700 text-white p-10 shadow-2xl">
+        <div className="max-w-md text-center md:text-left">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Simplify Tasks with Intelligent Automation{" "}
+          </h2>
+
+          <p className="text-gray-200 mb-8 leading-relaxed">
+            “Our operations are smoother than ever. TalentTrack helps us focus
+            on people, not paperwork.”
+          </p>
+        </div>
+
+        <div className="border-t border-gray-500 pt-6 mt-6">
+          <p className="uppercase text-sm tracking-widest text-gray-300 mb-4">
+            Trusted by 500+ growing businesses worldwide{" "}
+          </p>
+        </div>
       </div>
     </div>
   );

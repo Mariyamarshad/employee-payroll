@@ -4,7 +4,12 @@ import { Routes, Route } from 'react-router-dom'
 import LandingPage from '../pages/landingpage'
 import Login from '../pages/Auth/Login'
 import Signup from '../pages/Auth/Signup'
-import Admin from '../pages/admin/Admin'
+
+import AdminLayout from '../components/Layouts/AdminLayout'
+import Dashboard from '../components/admin/Dashboard'
+import Hiring from '../pages/admin/Hiring'
+import People from '../pages/admin/People'
+import Payroll from '../pages/admin/Payroll'
 
 const AppRoutes = () => {
   return (
@@ -13,7 +18,14 @@ const AppRoutes = () => {
             <Route path='/' element={<LandingPage/>} />
             <Route path='/sign-up' element={<Signup/>} />
             <Route path='/login' element={<Login/>} />
-            <Route path='/admin' element={<Admin/>} />
+           
+           <Route element={<AdminLayout/>}>
+            <Route path='/admin/dashboard' element={<Dashboard/>} />
+            <Route path='/admin/hiring' element={<Hiring/>} />
+            <Route path='/admin/people' element={<People/>} />
+            <Route path='/admin/payroll' element={<Payroll/>} />
+
+           </Route>
 
         </Routes>
     

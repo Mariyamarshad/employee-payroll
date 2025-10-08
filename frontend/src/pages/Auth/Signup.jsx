@@ -33,8 +33,8 @@ const Signup = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (data.password.length <4) {
-      toast.error("Password must be at least 4 characters long")
+    if (data.password.length < 4) {
+      toast.error("Password must be at least 4 characters long");
       return;
     }
 
@@ -59,12 +59,12 @@ const Signup = () => {
   useEffect(() => {
     if (error) {
       if (error.toLowerCase().includes("email")) {
-        toast.error("Email already Exists. Please use a different one!")
+        toast.error("Email already Exists. Please use a different one!");
       } else {
-        toast.error(error)
+        toast.error(error);
       }
     }
-  }, [error])
+  }, [error]);
 
   function togglePassword() {
     setShowPassword(!showPassword);
@@ -76,18 +76,15 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row ">
-
       <div className="w-full md:w-1/2 flex items-center justify-center bg-white/90 backdrop-blur-md px-8 md:px-12 rounded-3xl md:rounded-l-3xl md:rounded-r-none shadow-2xl mb-6 md:mb-0">
-
         <div className="w-full max-w-md">
-
-          <h2 className="text-3xl md:text-4xl font-extrabold text-blue-600 mb-2 text-center">
+          <h2 className="text-3xl md:text-4xl font-extrabold text-teal-700 mb-2 text-center">
             Sign Up
           </h2>
 
           <p className="text-gray-600 mb-6 text-center">
             Secure your communications with{" "}
-            <span className="text-blue-600 font-semibold">TalentTrack</span>
+            <span className="text-teal-800 font-semibold">TalentTrack</span>
           </p>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -160,8 +157,10 @@ const Signup = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-900 text-white font-semibold py-3 rounded-lg shadow-lg transition 
-             ${loading ? "opacity-70 cursor-not-allowed" : "hover:scale-[1.02]"}`}
+              className={`w-full flex justify-center items-center gap-2 bg-gradient-to-r from-teal-600 to-teal-900 text-white font-semibold py-3 rounded-lg shadow-lg transition 
+             ${
+               loading ? "opacity-70 cursor-not-allowed" : "hover:scale-[1.02]"
+             }`}
             >
               {loading ? (
                 <>
@@ -197,7 +196,7 @@ const Signup = () => {
             Already a member?{" "}
             <Link
               to="/login"
-              className="text-blue-600 font-medium hover:underline"
+              className="text-teal-800 font-medium hover:underline"
             >
               Login
             </Link>
@@ -205,12 +204,26 @@ const Signup = () => {
         </div>
       </div>
 
-      <div className="w-full md:w-1/2 flex items-center justify-center rounded-3xl md:rounded-r-3xl md:rounded-l-none shadow-2xl overflow-hidden">
-        <img
-          src="/singup.jpg"
-          alt="Sign Up Illustration"
-          className="w-full h-64 md:h-full object-cover"
-        />
+      <div className="w-full md:w-1/2 flex flex-col justify-center items-center bg-gradient-to-r from-teal-900 to-teal-700 text-white p-10 shadow-2xl">
+
+        <div className="max-w-md text-center md:text-left">
+
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Join TalentTrack and Simplify Your Payroll Journey
+            </h2>
+
+          <p className="text-gray-200 mb-8 leading-relaxed">
+            “Experience effortless payroll and employee management. From
+            onboarding to payments — TalentTrack keeps everything accurate,
+            automated, and in one place.”
+          </p>
+        </div>
+
+        <div className="border-t border-gray-400 pt-6 mt-6">
+          <p className="uppercase text-sm text-gray-300 tracking-widest">
+            Trusted by 500+ growing businesses worldwide
+          </p>
+        </div>
       </div>
     </div>
   );

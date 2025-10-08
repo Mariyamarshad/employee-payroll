@@ -22,6 +22,15 @@ const signup = async (req, res) => {
         });
     }
 
+    if (role === "admin") {
+      const adminExists = await User.findOne({ role: "admin" })
+      if(adminExists) {
+        return res.status(403).json({
+          message: "An admin already exists. You cannot register as admin"
+        })
+      }
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
@@ -72,7 +81,7 @@ const login = async (req, res) => {
     })
 
     res.status(200).json({
-      succes: true,
+      success: true,
       message: "Login successful",
       user: {
         email: existingUser.email,
