@@ -1,0 +1,8 @@
+const express = require("express")
+const router = express.Router();
+const{authMiddleware, verifyAdmin }  = require("../../middlewares/AuthMiddleware")
+const { addEmployee } = require("../../controllers/adminControllers/AddEmployee")
+
+router.post("/add-employee", authMiddleware, verifyAdmin,  addEmployee)
+
+module.exports = router
