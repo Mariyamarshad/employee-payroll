@@ -5,6 +5,7 @@ require("dotenv").config();
 const cookieParser = require("cookie-parser")
 
 const AuthRouter = require("./routes/commonRoutes/AuthRoutes")
+const employeeRoutes = require("./routes/adminROutes/employeeRoutes")
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use("/auth", AuthRouter);
+app.use("/admin", employeeRoutes)
 
 const PORT = process.env.PORT
 

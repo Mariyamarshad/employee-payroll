@@ -2,12 +2,12 @@ import React from "react";
 
 const Dashboard = () => {
   return (
-    <div>
+    <div className="p-2">
       <h1 className="text-3xl font-semibold text-gray-800 mb-8">
         Welcome to <span className="text-black">TalentTrack</span>
       </h1>
 
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-start p-4">
         <div>
           <div className="flex items-center space-x-6 mb-10">
             <div className="flex flex-col items-center">

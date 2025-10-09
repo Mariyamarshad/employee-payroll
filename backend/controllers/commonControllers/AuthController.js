@@ -37,7 +37,7 @@ const signup = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: role || "user",
+      role: role || "employee",
     });
 
     await newUser.save();
@@ -68,7 +68,10 @@ const login = async (req, res) => {
     }
 
     const jwtToken = jwt.sign(
-      { email: existingUser.email, id: existingUser.id },
+      { email: existingUser.email,
+        id: existingUser.id,
+        role: existingUser.role,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     )

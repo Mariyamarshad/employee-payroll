@@ -6,7 +6,7 @@ import Login from '../pages/Auth/Login'
 import Signup from '../pages/Auth/Signup'
 
 import AdminLayout from '../components/Layouts/AdminLayout'
-import Dashboard from '../components/admin/Dashboard'
+import Dashboard from '../pages/admin/Dashboard'
 import Hiring from '../pages/admin/Hiring'
 import People from '../pages/admin/People'
 import Payroll from '../pages/admin/Payroll'
@@ -20,7 +20,7 @@ const AppRoutes = () => {
             <Route path='/login' element={<Login/>} />
            
            <Route element={<AdminLayout/>}>
-            <Route path='/admin/dashboard' element={<Dashboard/>} />
+            <Route path='/admin/dashboard' element={<Dashboard />} />
             <Route path='/admin/hiring' element={<Hiring/>} />
             <Route path='/admin/people' element={<People/>} />
             <Route path='/admin/payroll' element={<Payroll/>} />

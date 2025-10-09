@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 
 const AdminNavbar = () => {
   return (
-    <nav className="flex justify-between items-center bg-gradient-to-r from-gray-100 to-yellow-50 px-8 py-4 shadow-sm border-b border-gray-200">
+    <nav className="flex justify-between items-center bg-gradient-to-r from-gray-100 to-yellow-50 px-8 py-4  border-b border-gray-200">
       <h1 className="text-2xl font-extrabold text-teal-700 tracking-wide border border-teal-700 rounded-full p-2">
         TalentTrack
       </h1>
