@@ -46,4 +46,14 @@ const addEmployee = async (req, res) => {
     }
 }
 
-module.exports = { addEmployee}
+const getAllEmployees = async (req, res) => {
+    try {
+        const employees = await User.find({ role: "employee" }).select("-password");
+        res.status(200).json({ success: true, employees })
+    } catch (err) {
+        console.error("Error fetching employees:", err);
+        res.status(500).json({ success: false, message: "Server Error"})
+    }
+}
+
+module.exports = { addEmployee, getAllEmployees}
