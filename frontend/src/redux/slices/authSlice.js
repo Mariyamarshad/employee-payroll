@@ -39,6 +39,21 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+export const logoutUser = createAsyncThunk(
+  "auth/logoutUser",
+  async (__, { rejectWithValue })=> {
+    try {
+      await axios[AuthAPI.logout.method](AuthAPI.logout.url,
+        {},
+        { withCredentials: true }
+        )
+        return true
+    } catch (err) {
+      return rejectWithValue("Logout failed")
+    }
+  }
+)
+
 const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -79,6 +94,12 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error =  action.payload;
+      })
+       .addCase(logoutUser.fulfilled, (state) => {
+        state.user = null;
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.error = action.payload;
       })
   },
 });

@@ -8,6 +8,10 @@ const AuthAPI = {
     login: {
         url: `${backendDomain}/auth/login`,
         method: "post",
+    },
+    logout: {
+        url: `${backendDomain}/auth/logout`,
+        method: "post",
     }
 }
 

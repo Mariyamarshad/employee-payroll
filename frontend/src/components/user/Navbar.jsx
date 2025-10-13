@@ -9,9 +9,7 @@ import {
   FiClock,
   FiDollarSign,
   FiMail,
-  FiFolder,
   FiBell,
-  FiHelpCircle,
   FiSettings,
   FiLogOut,
 } from 'react-icons/fi';
@@ -23,15 +21,13 @@ const Navbar = () => {
   const { user } = useSelector((state) => state.auth);
 
   const navItems = [
-    { path: '/dashboard', name: 'Dashboard', icon: <FiHome /> },
-    { path: '/profile', name: 'My Profile', icon: <FiUser /> },
-    { path: '/attendance', name: 'Attendance', icon: <FiClock /> },
-    { path: '/payroll', name: 'Payroll', icon: <FiDollarSign /> },
-    { path: '/requests', name: 'Requests', icon: <FiMail /> },
-    { path: '/history', name: 'History', icon: <FiFolder /> },
-    { path: '/notifications', name: 'Notifications', icon: <FiBell /> },
-    { path: '/help', name: 'Help / Support', icon: <FiHelpCircle /> },
-    { path: '/settings', name: 'Settings', icon: <FiSettings /> },
+    { path: '/employee/dashboard', name: 'Dashboard', icon: <FiHome /> },
+    { path: '/employee/profile', name: 'My Profile', icon: <FiUser /> },
+    { path: '/employee/attendance', name: 'Attendance', icon: <FiClock /> },
+    { path: '/employee/payroll', name: 'Payroll', icon: <FiDollarSign /> },
+    { path: '/employee/requests', name: 'Requests', icon: <FiMail /> },
+    { path: '/employee/notifications', name: 'Notifications', icon: <FiBell /> },
+    { path: '/employee/settings', name: 'Settings', icon: <FiSettings /> },
   ];
 
   const logout = async () => {

@@ -13,7 +13,7 @@ const People = () => {
   return (
     <div>
       <div className='flex flex-row justify-between items-center p-4'>
-        <div>
+       <div>
           <h2 className='font-bold text-lg text-gray-900'>Employees</h2>
           <p className='text-gray-700 text-sm'>Manage Your Employees</p>
         </div>

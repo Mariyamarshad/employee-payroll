@@ -1,7 +1,17 @@
 const User = require("../../models/userModel");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto")
+const  employeeWelcomeEmail = require("../../emails/employeeWelcome")
+const nodemailer = require("nodemailer")
+const sendEmail = require("../../Utils/sendEmail")
 
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    }
+})
 const addEmployee = async (req, res) => {
     try {
         const { name, email, department, designation, salary } = req.body;
@@ -25,6 +35,10 @@ const addEmployee = async (req, res) => {
         })
 
         await newEmployee.save();
+
+        const message = employeeWelcomeEmail(name, email, randomPassword);
+
+        await sendEmail(email, "Welcome to TalentTrack", message)
 
         res.status(201).json({
             success: true,
