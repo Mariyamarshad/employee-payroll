@@ -39,7 +39,7 @@ const Login = () => {
         if (user.role === "admin") {
           navigate("/admin/dashboard");
         } else {
-          navigate("/");
+          navigate("/employee/dashboard");
         }
       }, 1500);
     }
@@ -53,7 +53,7 @@ const Login = () => {
             Welcome back!
           </h2>
           <p className="text-gray-600 mb-6">
-            Log in to track and manage your employees
+            Log in to stay on top of your goals and achievements.
           </p>
 
           <form className="space-y-4" onSubmit={handleSubmit}>

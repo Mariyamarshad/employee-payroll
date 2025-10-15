@@ -6,8 +6,10 @@ const cookieParser = require("cookie-parser")
 
 const AuthRouter = require("./routes/commonRoutes/AuthRoutes")
 const employeeRoutes = require("./routes/adminROutes/employeeRoutes")
+const attendanceRoutes = require("./routes/employeeRoutes/attendanceRoutes")
 
 const app = express();
+app.use(cookieParser());
 
 app.use(cors({
     origin: ["http://localhost:5173", "http://localhost:5174"],
@@ -16,10 +18,10 @@ app.use(cors({
 ));
 app.use(express.json())
 
-app.use(cookieParser())
 
 app.use("/auth", AuthRouter);
 app.use("/admin", employeeRoutes)
+app.use("/attendance", attendanceRoutes)
 
 const PORT = process.env.PORT
 
