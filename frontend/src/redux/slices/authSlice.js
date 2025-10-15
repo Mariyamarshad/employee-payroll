@@ -25,16 +25,15 @@ export const signupUser = createAsyncThunk(
 
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
-  async ({ email, password }) => {
+  async ({ email, password }, { rejectWithValue}) => {
     try {
         const res = await axios[AuthAPI.login.method] (AuthAPI.login.url, 
-            { email,password,},
+            { email,password },
             { withCredentials: true }
             )
         return res.data.user
     } catch (err) {
-        const message = err.response?.data?.message || "login failed. please try again."
-        throw message;
+      return rejectWithValue(err.response?.data?.message || "Login failed");
     }
   }
 );
@@ -53,6 +52,22 @@ export const logoutUser = createAsyncThunk(
     }
   }
 )
+
+ export const getCurrentUser = createAsyncThunk(
+  "auth/fetchUser",
+  async (_, { rejectWithValue }) => {
+    try {
+      const res = await axios[AuthAPI.currentUser.method](
+        AuthAPI.currentUser.url,
+        { withCredentials: true }
+      );
+      return res.data.user;
+    } catch (err) {
+      return rejectWithValue("Not authenticated");
+    }
+  }
+);
+
 
 const authSlice = createSlice({
   name: "auth",
@@ -76,7 +91,7 @@ const authSlice = createSlice({
       .addCase(signupUser.fulfilled, (state, action) => {
         state.loading = false;
         state.signupSuccess = true;
-        state.user = action.payload;
+        state.user = action.payload.user;
       })
       .addCase(signupUser.rejected, (state, action) => {
         state.loading = false;
@@ -100,6 +115,18 @@ const authSlice = createSlice({
       })
       .addCase(logoutUser.rejected, (state, action) => {
         state.error = action.payload;
+      })
+
+      .addCase(getCurrentUser.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(getCurrentUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload
+      })
+      .addCase(getCurrentUser.rejected, (state, action) => {
+        state.loading = false;
+        state.user = null;
       })
   },
 });

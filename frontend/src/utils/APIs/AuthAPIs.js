@@ -12,6 +12,10 @@ const AuthAPI = {
     logout: {
         url: `${backendDomain}/auth/logout`,
         method: "post",
+    },
+    currentUser: {
+        url: `${backendDomain}/auth/currentUser`,
+        method: "get"
     }
 }
 
