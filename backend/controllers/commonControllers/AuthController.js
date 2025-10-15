@@ -76,7 +76,7 @@ const login = async (req, res) => {
       { expiresIn: "24h" }
     )
 
-    res.cookie("token", jwtToken, {
+    res.cookie("employee_token", jwtToken, {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
@@ -87,6 +87,7 @@ const login = async (req, res) => {
       success: true,
       message: "Login successful",
       user: {
+        _id: existingUser.id,
         email: existingUser.email,
         name: existingUser.name,
         role: existingUser.role,
@@ -100,7 +101,7 @@ const login = async (req, res) => {
 
 const logout = async (req, res) => {
    try {
-    res.clearCookie("token", {
+    res.clearCookie("employee_token", {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
@@ -112,8 +113,26 @@ const logout = async (req, res) => {
    }
 }
 
+const getCurrentUser = async (req, res) => {
+  try {
+    const token = req.cookies.employee_token; 
+    if (!token) return res.json({ user: null });
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) return res.json({ user: null });
+    res.json({ user });
+  } catch (err) {
+    console.error("Error verifying token:", err.message);
+    res.json({ user: null });
+  }
+};
+
+
 module.exports = {
   signup,
   login,
   logout,
+  getCurrentUser,
 };
