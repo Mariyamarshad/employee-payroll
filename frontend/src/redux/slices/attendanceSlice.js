@@ -40,14 +40,32 @@ export const checkOut = createAsyncThunk(
   }
 );
 
+export const fetchAttendanceSummary = createAsyncThunk(
+  "attendance/userSummary",
+  async (userId, { rejectWithValue }) => {
+    try {
+      const res = await attendanceApi.getAttendanceSummary(userId);
+      return res;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || {
+          message: "Failed to fetch attendance summary",
+        }
+      );
+    }
+  }
+);
+
 const attendanceSlice = createSlice({
   name: "attendance",
   initialState: {
     records: [],
-    isCheckedIn: false,
+    isCheckedIn: null,
     status: "idle",
     loading: false,
     error: null,
+    summary: null,
+    summaryLoading: false,
   },
   reducers: {},
   extraReducers: (builder) => {
@@ -59,13 +77,18 @@ const attendanceSlice = createSlice({
         state.status = "succeeded";
         state.records = action.payload;
 
-        if (action.payload.length > 0) {
-          const latest = action.payload[action.payload.length - 1];
-          state.isCheckedIn = !latest.checkOutTime;
+        const today = new Date().toISOString().split("T")[0];
+        const todayRecord = action.payload.find((r) => r.date === today);
+
+        if (todayRecord) {
+          state.isCheckedIn = !todayRecord.checkOutTime;
         } else {
           state.isCheckedIn = false;
         }
+
+        localStorage.setItem("isCheckedIn", state.isCheckedIn.toString());
       })
+
       .addCase(fetchUserAttendance.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload?.message || "Something went wrong";
@@ -77,6 +100,12 @@ const attendanceSlice = createSlice({
       .addCase(checkIn.fulfilled, (state, action) => {
         state.loading = false;
         state.isCheckedIn = true;
+        localStorage.setItem("isCheckedIn", "true");
+
+        if (action.payload) {
+          const newRecord = action.payload.data ?? action.payload;
+          state.records = [...state.records, newRecord];
+        }
       })
       .addCase(checkIn.rejected, (state, action) => {
         state.loading = false;
@@ -88,12 +117,25 @@ const attendanceSlice = createSlice({
       .addCase(checkOut.fulfilled, (state, action) => {
         state.loading = false;
         state.isCheckedIn = false;
+        localStorage.setItem("isCheckedIn", "false");
       })
       .addCase(checkOut.rejected, (state, action) => {
         state.loading = false;
         toast.error(
           action.payload?.message || "You have already checked out today!"
         );
+      })
+
+      .addCase(fetchAttendanceSummary.pending, (state) => {
+        state.summaryLoading = true;
+      })
+      .addCase(fetchAttendanceSummary.fulfilled, (state, action) => {
+        state.summaryLoading = false;
+        state.summary = action.payload;
+      })
+      .addCase(fetchAttendanceSummary.rejected, (state, action) => {
+        state.summaryLoading = false;
+        state.error = action.payload?.message || "Failed to fetch summary";
       });
   },
 });
