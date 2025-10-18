@@ -13,6 +13,10 @@ const attendanceSchema = new mongoose.Schema({
   checkInTime: Date,
   checkOutTime: Date,
   totalHours: String,
+  standardHours: { type: String, default: "8h 0m" },
+  overtime: { type: String, default: "0h 0m" },
+  overtimeHours: { type: Number, default: 0 },   
+  overtimeMinutes: { type: Number, default: 0 },
   status: {
     type: String,
     enum: ["Present", "Absent", "Half Day", "Work From Home"],

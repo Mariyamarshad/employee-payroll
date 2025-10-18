@@ -3,19 +3,19 @@ const backendDomain = import.meta.env.VITE_BACKEND_URL;
 
 const API_URL = `${backendDomain}/attendance`;
 
-export const checkIn = async () => {
+export const checkIn = async (userId) => {
     const res = await axios.post(
         `${API_URL}/checkin`,
-        {},
+        {userId},
         { withCredentials: true}
     )
     return res.data;
 }
 
-export const checkOut = async () => {
+export const checkOut = async (userId) => {
     const res = await axios.post(
         `${API_URL}/checkout`,
-        {},
+        {userId},
         {withCredentials: true }
     )
     return res.data
@@ -37,3 +37,7 @@ export const getTodayAttendance = async (userId) => {
   return res.data;
 };
 
+export const getAttendanceSummary = async (userId) => {
+  const res = await axios.get(`${API_URL}/summary/${userId}`, { withCredentials: true })
+  return res.data
+}
