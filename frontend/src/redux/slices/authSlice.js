@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import AuthAPI from "../../utils/APIs/AuthAPIs";
+import { toast } from "sonner"
 
 export const signupUser = createAsyncThunk(
   "auth/signupUser",
@@ -109,6 +110,7 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error =  action.payload;
+        toast.error("Invalid username or password")
       })
        .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;

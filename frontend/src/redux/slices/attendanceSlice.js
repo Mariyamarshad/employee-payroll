@@ -1,141 +1,80 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import * as attendanceApi from "../../utils/APIs/Attendance";
+import * as attendanceApi from "../../utils/APIs/attendance";
 import { toast } from "sonner";
 
-export const fetchUserAttendance = createAsyncThunk(
-  "attendance/fetchUserAttendance",
-  async (userId, { rejectWithValue }) => {
-    try {
-      const res = await attendanceApi.getUserAttendance(userId);
-      return res;
-    } catch (err) {
-      return rejectWithValue(
-        err.response?.data || { message: "Failed to fetch attendance" }
-      );
-    }
-  }
-);
-
-export const checkIn = createAsyncThunk(
+export const handleCheckIn = createAsyncThunk(
   "attendance/checkIn",
-  async (userId, { rejectWithValue }) => {
-    try {
-      const response = await attendanceApi.checkIn(userId);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
+  async (userId) => {
+    return await attendanceApi.checkIn(userId);
   }
 );
 
-export const checkOut = createAsyncThunk(
+export const handleCheckOut = createAsyncThunk(
   "attendance/checkOut",
-  async (userId, { rejectWithValue }) => {
-    try {
-      const response = await attendanceApi.checkOut(userId);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
-    }
+  async (userId) => {
+    return await attendanceApi.checkOut(userId);
   }
 );
 
-export const fetchAttendanceSummary = createAsyncThunk(
-  "attendance/userSummary",
-  async (userId, { rejectWithValue }) => {
-    try {
-      const res = await attendanceApi.getAttendanceSummary(userId);
-      return res;
-    } catch (error) {
-      return rejectWithValue(
-        error.response?.data || {
-          message: "Failed to fetch attendance summary",
-        }
-      );
-    }
+export const fetchAllAttendance = createAsyncThunk(
+  "attendance/all",
+  async (employeeId) => await attendanceApi.getAllAttendance(employeeId)
+);
+
+export const fetchTodayAttendance = createAsyncThunk(
+  "attendance/today",
+  async (employeeId) => await attendanceApi.getTodayAttendance(employeeId)
+);
+
+export const fetchSummary = createAsyncThunk(
+  "attendance/summary",
+  async (userId) => {
+    return await attendanceApi.getAttendanceSummary(userId);
   }
 );
 
 const attendanceSlice = createSlice({
   name: "attendance",
   initialState: {
+    isCheckedIn: false,
+    todayAttendance: null,
     records: [],
-    isCheckedIn: null,
-    status: "idle",
     loading: false,
-    error: null,
     summary: null,
-    summaryLoading: false,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserAttendance.pending, (state) => {
-        state.status = "loading";
+      .addCase(handleCheckIn.fulfilled, (state, action) => {
+        if (action.payload?.attendance) {
+          state.isCheckedIn = true;
+          state.todayAttendance = action.payload.attendance;
+          toast.success(action.payload.message || "Checked in!");
+        } else {
+          toast.error(action.payload?.message || "Cannot check-in right now!");
+        }
       })
-      .addCase(fetchUserAttendance.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        state.records = action.payload;
+      .addCase(handleCheckIn.rejected, () => {
+        toast.error("Check-in failed!");
+      })
+      .addCase(fetchAllAttendance.fulfilled, (state, action) => {
+        console.log("All Attendance Records:", action.payload);
+        state.records = action.payload || [];
+      })
 
-        const today = new Date().toISOString().split("T")[0];
-        const todayRecord = action.payload.find((r) => r.date === today);
+      .addCase(fetchTodayAttendance.fulfilled, (state, action) => {
+        const today = action.payload?.attendance;
+        state.todayAttendance = today;
 
-        if (todayRecord) {
-          state.isCheckedIn = !todayRecord.checkOutTime;
+        if (today?.checkIn && !today?.checkOut) {
+          state.isCheckedIn = true;
         } else {
           state.isCheckedIn = false;
         }
-
-        localStorage.setItem("isCheckedIn", state.isCheckedIn.toString());
       })
 
-      .addCase(fetchUserAttendance.rejected, (state, action) => {
-        state.status = "failed";
-        state.error = action.payload?.message || "Something went wrong";
-      })
-
-      .addCase(checkIn.pending, (state) => {
-        state.loading = true;
-      })
-      .addCase(checkIn.fulfilled, (state, action) => {
-        state.loading = false;
-        state.isCheckedIn = true;
-        localStorage.setItem("isCheckedIn", "true");
-
-        if (action.payload) {
-          const newRecord = action.payload.data ?? action.payload;
-          state.records = [...state.records, newRecord];
-        }
-      })
-      .addCase(checkIn.rejected, (state, action) => {
-        state.loading = false;
-        toast.error(
-          action.payload?.message || "You have already checked in today!"
-        );
-      })
-
-      .addCase(checkOut.fulfilled, (state, action) => {
-        state.loading = false;
-        state.isCheckedIn = false;
-        localStorage.setItem("isCheckedIn", "false");
-      })
-      .addCase(checkOut.rejected, (state, action) => {
-        state.loading = false;
-        toast.error(
-          action.payload?.message || "You have already checked out today!"
-        );
-      })
-
-      .addCase(fetchAttendanceSummary.pending, (state) => {
-        state.summaryLoading = true;
-      })
-      .addCase(fetchAttendanceSummary.fulfilled, (state, action) => {
-        state.summaryLoading = false;
-        state.summary = action.payload;
-      })
-      .addCase(fetchAttendanceSummary.rejected, (state, action) => {
-        state.summaryLoading = false;
-        state.error = action.payload?.message || "Failed to fetch summary";
+      .addCase(fetchSummary.fulfilled, (state, action) => {
+        state.summary = action.payload || null;
       });
   },
 });

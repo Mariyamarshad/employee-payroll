@@ -1,29 +1,38 @@
-const mongoose = require("mongoose");
+const mongoose =  require("mongoose");
 
 const attendanceSchema = new mongoose.Schema({
-  userId: {
+  employeeId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "Employee",
     required: true,
   },
   date: {
-    type: String, 
+    type: String,
     required: true,
   },
-  checkInTime: Date,
-  checkOutTime: Date,
-  totalHours: String,
-  standardHours: { type: String, default: "8h 0m" },
-  overtime: { type: String, default: "0h 0m" },
-  overtimeHours: { type: Number, default: 0 },   
-  overtimeMinutes: { type: Number, default: 0 },
+  checkIn: {
+    type: String,
+  },
+  checkOut: {
+    type: String,
+  },
   status: {
     type: String,
-    enum: ["Present", "Absent", "Half Day", "Work From Home"],
+    enum: ["Present", "Late", "Absent", "Overtime"],
     default: "Present",
   },
-}, { timestamps: true });
+  totalHours: {
+    type: Number,
+    default: 0,
+  },
+  overtimeHours: {
+    type: Number,
+    default: 0,
+  },
+  autoCheckOut: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-attendanceSchema.index({ userId: 1, date: 1 }, { unique: true });
-
-module.exports = mongoose.model("Attendance", attendanceSchema);
+module.exports =  mongoose.model("Attendance", attendanceSchema);

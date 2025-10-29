@@ -6,7 +6,8 @@ const cookieParser = require("cookie-parser")
 
 const AuthRouter = require("./routes/commonRoutes/AuthRoutes")
 const employeeRoutes = require("./routes/adminROutes/employeeRoutes")
-const attendanceRoutes = require("./routes/employeeRoutes/attendanceRoutes")
+const attendanceRoutes = require("./routes/employeeRoutes/attendanceRoutes");
+const { scheduleAttendanceJob } = require("./cron/attendanceJob");
 
 const app = express();
 app.use(cookieParser());
@@ -22,12 +23,14 @@ app.use(express.json())
 app.use("/auth", AuthRouter);
 app.use("/admin", employeeRoutes)
 app.use("/attendance", attendanceRoutes)
+scheduleAttendanceJob()
 
 const PORT = process.env.PORT
 
 async function startServer() {
 try {
     await connectDB();
+
     app.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`)
     })
@@ -35,5 +38,6 @@ try {
     console.error("Database connection failed:", err.message)
 }
 }
+
 
 startServer();

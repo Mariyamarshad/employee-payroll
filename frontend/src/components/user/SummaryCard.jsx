@@ -1,19 +1,21 @@
 import React from "react";
 
 const SummaryCard = ({ title, value, icon, color }) => {
-  const colorMap = {
-    teal: "text-teal-600 bg-teal-100",
-    red: "text-red-600 bg-red-100",
-    orange: "text-orange-600 bg-orange-100",
-    blue: "text-blue-600 bg-blue-100",
+  const colorClasses = {
+    teal: "text-teal-600 bg-teal-50",
+    red: "text-rose-600 bg-rose-50",
+    orange: "text-orange-600 bg-orange-50",
+    blue: "text-blue-600 bg-blue-50",
   };
 
   return (
-    <div className="flex items-center justify-between bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition">
-      <div className={`p-3 rounded-full ${colorMap[color]} text-lg`}>{icon}</div>
-      <div className="text-right">
-        <p className="text-gray-600 text-sm">{title}</p>
-        <h3 className="text-xl font-semibold text-gray-800">{value}</h3>
+    <div
+      className={`flex items-center gap-4 p-4 rounded-xl shadow-sm border border-gray-100 bg-white hover:shadow-md transition duration-150 ${colorClasses[color]}`}
+    >
+      <div className={`text-2xl ${colorClasses[color].split(" ")[0]}`}>{icon}</div>
+      <div>
+        <h3 className="text-sm font-medium text-gray-500">{title}</h3>
+        <p className="text-lg font-bold text-gray-800">{value}</p>
       </div>
     </div>
   );

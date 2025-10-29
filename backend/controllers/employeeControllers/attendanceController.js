@@ -1,157 +1,189 @@
 const Attendance = require("../../models/attendanceModel");
+const moment = require("moment");
 
-const STANDARD_WORK_HOURS = 8;
-
-const getCurrentTime = () => new Date();
-const getCurrentDate = () => new Date().toISOString().split("T")[0];
-
-exports.checkIn = async (req, res) => {
+const checkIn = async (req, res) => {
   try {
-    const userId = req.user?.id || req.body.userId;
-    const date = getCurrentDate();
+    const { employeeId } = req.body;
+    const date = moment().format("YYYY-MM-DD");
 
-    const existing = await Attendance.findOne({ userId, date });
-    if (existing) {
+    const existing = await Attendance.findOne({ employeeId, date });
+    if (existing && existing.checkIn) {
       return res.status(400).json({ message: "Already checked in today." });
     }
 
-    const attendance = new Attendance({
-      userId,
+    // Office Hours
+    const officeStartTime = moment("09:00 AM", "hh:mm A");
+    const officeEndTime = moment("05:00 PM", "hh:mm A"); 
+
+    const now = moment(); 
+
+    // ⛔ Block check-in if office day is over
+    if (now.isAfter(officeEndTime)) {
+      return res.status(403).json({
+        message: "Office hours have ended! You cannot check-in now.",
+      });
+    }
+
+    // ✅ Allow late check-in before cutoff
+    const checkInTime = now.format("hh:mm A");
+    const status = now.isAfter(officeStartTime) ? "Late" : "Present";
+
+    const attendance = await Attendance.create({
+      employeeId,
       date,
-      checkInTime: getCurrentTime(),
-      status: "Present",
-      standardHours: `${STANDARD_WORK_HOURS}h 0m`,
-      overtime: "0h 0m",
+      checkIn: checkInTime,
+      status,
     });
-
-    await attendance.save();
-    res.status(200).json({ message: "Check-in successful", attendance });
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-exports.checkOut = async (req, res) => {
-  try {
-    const userId = req.user?.id || req.body.userId;
-    const date = getCurrentDate();
-
-    const attendance = await Attendance.findOne({ userId, date });
-    if (!attendance) return res.status(400).json({ message: "Check-in first." });
-    if (attendance.checkOutTime) return res.status(400).json({ message: "Already checked out." });
-
-    const checkOutTime = getCurrentTime();
-    const diffMs = checkOutTime - new Date(attendance.checkInTime);
-    const hours = Math.floor(diffMs / 3600000);
-    const minutes = Math.floor((diffMs % 3600000) / 60000);
-    const totalHours = `${hours}h ${minutes}m`;
-
-    const overtimeMs = diffMs - STANDARD_WORK_HOURS * 3600000;
-    let overtime = "0h 0m";
-    let overtimeHours = 0;
-    let overtimeMinutes = 0;
-
-    if (overtimeMs > 0) {
-      overtimeHours = Math.floor(overtimeMs / 3600000);
-      overtimeMinutes = Math.floor((overtimeMs % 3600000) / 60000);
-      overtime = `${overtimeHours}h ${overtimeMinutes}m`;
-    }
-
-    attendance.checkOutTime = checkOutTime;
-    attendance.totalHours = totalHours;
-    attendance.overtime = overtime;
-    attendance.overtimeHours = overtimeHours;
-    attendance.overtimeMinutes = overtimeMinutes;
-    attendance.standardHours = `${STANDARD_WORK_HOURS}h 0m`;
-
-    await attendance.save();
-
-    res.status(200).json({ message: "Check-out successful", attendance });
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-
-exports.getUserAttendance = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const records = await Attendance.find({ userId }).sort({ date: -1 });
-    res.status(200).json(records);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-exports.getTodayAttendance = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const date = getCurrentDate();
-    const record = await Attendance.findOne({ userId, date });
-
-    if (!record) return res.status(200).json({});
-
-   
-    if (record.checkInTime && !record.checkOutTime) {
-      const now = new Date();
-      const diffMs = now - new Date(record.checkInTime);
-      const hours = Math.floor(diffMs / 3600000);
-      const minutes = Math.floor((diffMs % 3600000) / 60000);
-
-      const totalHours = `${hours}h ${minutes}m`;
-      const overtimeMs = diffMs - STANDARD_WORK_HOURS * 3600000;
-
-      let overtime = "0h 0m";
-      if (overtimeMs > 0) {
-        const overtimeHours = Math.floor(overtimeMs / 3600000);
-        const overtimeMinutes = Math.floor((overtimeMs % 3600000) / 60000);
-        overtime = `${overtimeHours}h ${overtimeMinutes}m`;
-      }
-
-      record.totalHours = totalHours;
-      record.overtime = overtime;
-    }
-
-    res.status(200).json(record);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-
-exports.getAllAttendance = async (req, res) => {
-  try {
-    const records = await Attendance.find()
-      .populate("userId", "name email role department designation")
-      .sort({ date: -1 });
-
-    res.status(200).json(records);
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
-  }
-};
-
-exports.getAttendanceSummary = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const records = await Attendance.find({ userId });
-
-    const daysPresent = records.filter(r => r.status === "Present").length;
-    const totalOvertimeMinutes = records.reduce((sum, r) => {
-      const h = r.overtimeHours || 0;
-      const m = r.overtimeMinutes || 0;
-      return sum + (h * 60 + m);
-    }, 0);
-
-    const overtimeHours = Math.floor(totalOvertimeMinutes / 60);
-    const overtimeMinutes = totalOvertimeMinutes % 60;
 
     res.status(200).json({
-      daysPresent,
-      totalRecords: records.length,
-      overtime: `${overtimeHours}h ${overtimeMinutes}m`,
+      message: "Checked in successfully",
+      attendance,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
+    res.status(500).json({ message: error.message });
   }
+};
+
+
+const checkOut = async (req, res) => {
+  try {
+    const { employeeId } = req.body;
+    const date = moment().format("YYYY-MM-DD");
+
+    const attendance = await Attendance.findOne({ employeeId, date });
+    if (!attendance || !attendance.checkIn) {
+      return res.status(400).json({ message: "No check-in found for today." });
+    }
+    if (attendance.checkOut) {
+      return res.status(400).json({ message: "Already checked out today." });
+    }
+
+    const checkOutTime = moment().format("hh:mm A");
+    const checkInMoment = moment(attendance.checkIn, "hh:mm A");
+    const checkOutMoment = moment(checkOutTime, "hh:mm A");
+
+    const duration = moment.duration(checkOutMoment.diff(checkInMoment));
+    const totalHours = parseFloat(duration.asHours().toFixed(2));
+
+    attendance.checkOut = checkOutTime;
+    attendance.totalHours = totalHours;
+
+    const standardHours = 9;
+    if (totalHours > standardHours) {
+      attendance.status = "Overtime";
+      attendance.overtimeHours = parseFloat(
+        (totalHours - standardHours).toFixed(2)
+      );
+    }
+
+    await attendance.save();
+
+    res.status(200).json({
+      message: "Checked out successfully",
+      attendance,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getTodayAttendance = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const date = moment().format("YYYY-MM-DD");
+
+    const attendance = await Attendance.findOne({ employeeId, date });
+    res.status(200).json({ attendance });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getBusinessDays = (startDate, endDate) => {
+  let count = 0;
+  let curDate = moment(startDate).clone();
+
+  while (curDate.isSameOrBefore(endDate)) {
+    const day = curDate.day();
+    if (day !== 0 && day !== 6) count++;
+    curDate.add(1, "day");
+  }
+
+  return count;
+};
+
+const getAttendanceSummary = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    const records = await Attendance.find({ employeeId });
+
+    if (!records.length) {
+      return res.status(200).json({
+        totalDaysPresent: 0,
+        totalDaysAbsent: 0,
+        overtimeHours: 0,
+        lateArrivals: 0,
+      });
+    }
+
+    const firstRecordDate = moment(records[0].date, "YYYY-MM-DD");
+    const today = moment();
+
+    const totalWorkingDays = getBusinessDays(firstRecordDate, today);
+
+    let totalDaysPresent = 0;
+    let overtimeHours = 0;
+    let lateArrivals = 0;
+
+    records.forEach((record) => {
+      if (["Present", "Overtime", "Late"].includes(record.status)) {
+        totalDaysPresent++;
+      }
+
+      if (record.overtimeHours) {
+        overtimeHours += record.overtimeHours;
+      }
+
+      if (record.status === "Late") {
+        lateArrivals++;
+      }
+    });
+
+    const totalDaysAbsent = Math.max(0, totalWorkingDays - totalDaysPresent);
+
+    res.status(200).json({
+      totalDaysPresent,
+      totalDaysAbsent,
+      overtimeHours: parseFloat(overtimeHours.toFixed(2)),
+      lateArrivals,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getAllAttendance = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+
+    const attendanceRecords = await Attendance.find({ employeeId }).sort({
+      date: -1,
+    });
+
+    res.status(200).json({
+      success: true,
+      attendance: attendanceRecords,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  checkIn,
+  checkOut,
+  getTodayAttendance,
+  getAttendanceSummary,
+  getAllAttendance,
 };
