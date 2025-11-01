@@ -8,11 +8,12 @@ const {
   getAllAttendance,
   getAttendanceSummary,
 } = require("../../controllers/employeeControllers/attendanceController");
-const { authMiddleware, verifyAdmin } = require("../../middlewares/AuthMiddleware");
+const { authMiddleware } = require("../../middlewares/AuthMiddleware");
+const { attendanceValidation } = require("../../middlewares/AttendanceValidation")
 
-router.post("/checkin",authMiddleware, checkIn);
+router.post("/checkin",authMiddleware, attendanceValidation, checkIn);
 
-router.post("/checkout",authMiddleware, checkOut);
+router.post("/checkout",authMiddleware,attendanceValidation, checkOut);
 
 router.get("/:employeeId/today", authMiddleware, getTodayAttendance);
 

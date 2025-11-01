@@ -10,6 +10,11 @@ const attendanceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  shiftType: {
+    type: String,
+    enum: ["day", "night"],
+    default: "day",
+  },
   checkIn: {
     type: String,
   },
@@ -18,8 +23,12 @@ const attendanceSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Present", "Late", "Absent", "Overtime"],
+    enum: ["Present", "Late", "Absent", "Overtime", "Half Day"],
     default: "Present",
+  },
+  isHalfDay: {
+    type: Boolean,
+    default: false,
   },
   totalHours: {
     type: Number,

@@ -9,13 +9,20 @@ const scheduleAttendanceJob = () => {
     async () => {
       try {
         const today = moment().format("YYYY-MM-DD");
-        const standardHours = 9;
-        const officeEndTime = moment("18:00", "HH:mm"); 
+
+        const dayOfWeek = moment().day();
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          console.log("Weekend — no auto processing.");
+          return;
+        }
 
         const allEmployees = await Employee.find();
 
         for (const emp of allEmployees) {
-          let record = await Attendance.findOne({ employeeId: emp._id, date: today });
+          let record = await Attendance.findOne({
+            employeeId: emp._id,
+            date: today,
+          });
 
           if (!record) {
             await Attendance.create({
@@ -28,44 +35,53 @@ const scheduleAttendanceJob = () => {
             continue;
           }
 
+          const shiftStart = emp.shiftType === "night"
+            ? moment("08:00 PM", "hh:mm A")
+            : moment("09:00 AM", "hh:mm A");
+
+          const shiftEnd = emp.shiftType === "night"
+            ? moment("04:00 AM", "hh:mm A").add(1, "day")
+            : moment("05:00 PM", "hh:mm A");
+
           if (record.checkIn && !record.checkOut) {
-            record.checkOut = officeEndTime.format("hh:mm A");
+            record.checkOut = shiftEnd.format("hh:mm A");
             record.autoCheckOut = true;
           }
 
           if (record.checkIn && record.checkOut) {
             const checkInTime = moment(record.checkIn, "hh:mm A");
             const checkOutTime = moment(record.checkOut, "hh:mm A");
+
             const duration = moment.duration(checkOutTime.diff(checkInTime));
-            const totalHours = parseFloat(duration.asHours().toFixed(2));
+            const workedHours = parseFloat(duration.asHours().toFixed(2));
+            record.totalHours = workedHours;
 
-            record.totalHours = totalHours;
-
-            const lateThreshold = moment("09:15", "HH:mm");
-            if (checkInTime.isAfter(lateThreshold)) {
-              record.status = "Late";
-            }
-
-            if (totalHours > standardHours) {
-              record.status = "Overtime";
-              record.overtimeHours = parseFloat((totalHours - standardHours).toFixed(2));
-            }
-
-            if (!record.status || record.status === "Present") {
+            if (workedHours >= 9) {
               record.status = "Present";
+            } else if (workedHours >= 4) {
+              record.status = "Half Day";
+            } else {
+              record.status = "Absent";
+            }
+
+            if (workedHours > 9) {
+              record.status = "Overtime";
+              record.overtimeHours = parseFloat(
+                (workedHours - 9).toFixed(2)
+              );
             }
 
             await record.save();
           }
         }
 
-        console.log(` Daily attendance job completed for ${today}`);
+        console.log(`Daily Attendance Job Completed for ${today}`);
       } catch (err) {
-        console.error(" Error in daily attendance cron job:", err);
+        console.error(" Error in Daily Attendance Job:", err);
       }
     },
     { timezone: "Asia/Karachi" }
   );
 };
 
-module.exports = { scheduleAttendanceJob }
+module.exports = { scheduleAttendanceJob };

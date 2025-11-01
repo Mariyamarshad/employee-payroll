@@ -57,10 +57,18 @@ const attendanceSlice = createSlice({
       .addCase(handleCheckIn.rejected, () => {
         toast.error("Check-in failed!");
       })
-      .addCase(fetchAllAttendance.fulfilled, (state, action) => {
-        console.log("All Attendance Records:", action.payload);
-        state.records = action.payload || [];
+            .addCase(fetchAllAttendance.pending, (state) => {
+        state.loading = true;
       })
+      .addCase(fetchAllAttendance.fulfilled, (state, action) => {
+        state.loading = false;
+        state.records = action.payload;
+      })
+      .addCase(fetchAllAttendance.rejected, (state) => {
+        state.loading = false;
+        toast.error("Failed to load attendance data");
+      })
+
 
       .addCase(fetchTodayAttendance.fulfilled, (state, action) => {
         const today = action.payload?.attendance;

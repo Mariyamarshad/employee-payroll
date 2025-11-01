@@ -16,8 +16,14 @@ const userSchema = new mongoose.Schema({
 
     department: String,
     designation: String,
-    salary: Number
+    salary: Number,
+    joiningDate: {
+        type: Date,
+        required: true,
+        default: Date.now,
+    }
 },
+
 {
     timestamps: true,
 })
