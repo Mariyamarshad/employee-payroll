@@ -28,7 +28,7 @@ const SummaryPanel = ({ userId }) => {
   }
 
   return (
-    <div className="lg:w-1/3 rounded-3xl p-8 bg-white/80 backdrop-blur-sm border border-gray-100 shadow-md">
+    <div className="lg:w-1/3 rounded-3xl p-8 ">
       <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-2">
         Attendance Summary
       </h2>

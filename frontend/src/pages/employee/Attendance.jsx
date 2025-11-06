@@ -29,7 +29,6 @@ const AttendancePage = () => {
         </h1>
         <p className="text-gray-600 mb-8">{new Date().toDateString()}</p>
 
-        {/* ✅ Center the big circular button */}
         <div className="flex justify-center mb-12">
           <AttendanceButton
             isCheckedIn={isCheckedIn}
@@ -38,11 +37,9 @@ const AttendancePage = () => {
           />
         </div>
 
-        {/* ✅ Attendance records table */}
         <AttendanceTable attendance={records || []} />
       </div>
 
-      {/* ✅ Right side: summary panel */}
       <SummaryPanel userId={userId} />
     </div>
   );

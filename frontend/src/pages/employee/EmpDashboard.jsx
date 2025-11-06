@@ -15,7 +15,6 @@ const EmpDashboard = () => {
         Here’s an overview of your work details and updates.
       </p>
 
-      {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         <StatCard title="Days Present" value="22 / 26" icon={<FaCalendarCheck />} />
         <StatCard title="Next Salary Date" value="30 Oct 2025" icon={<FaMoneyBillWave />} />
@@ -23,7 +22,6 @@ const EmpDashboard = () => {
         <StatCard title="Performance" value="Excellent" icon={<FaChartLine />} />
       </div>
 
-      {/* Announcements */}
       <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 max-w-4xl">
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Company Announcements
