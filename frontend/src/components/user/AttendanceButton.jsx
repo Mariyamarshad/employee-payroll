@@ -1,9 +1,10 @@
 import React from "react";
 import { FaSignInAlt, FaSignOutAlt } from "react-icons/fa";
 
-const AttendanceButton = ({ isCheckedIn, onCheckIn, onCheckOut }) => (
+const AttendanceButton = ({ isCheckedIn, onCheckIn, onCheckOut, disabled }) => (
   <button
     onClick={isCheckedIn ? onCheckOut : onCheckIn}
+    disabled={disabled}
     className={`w-48 h-48 rounded-full flex flex-col justify-center items-center text-white text-xl font-semibold shadow-xl transform transition-all duration-300 active:scale-95 ${
       isCheckedIn
         ? "bg-red-500 hover:bg-red-600"

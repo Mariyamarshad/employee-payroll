@@ -23,7 +23,7 @@ const AdminNavbar = () => {
   
     const navItems = [
       { path: '/admin/dashboard', name: 'Dashboard', icon: <FiHome /> },
-      { path: '/admin/people', name: 'Attendance', icon: <FiClock /> },
+      { path: '/admin/people', name: 'Employees', icon: <FiClock /> },
       { path: '/admin/hiring', name: 'Payroll', icon: <FiDollarSign /> },
       { path: '/admin/payroll', name: 'Requests', icon: <FiMail /> },
     ];

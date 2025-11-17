@@ -34,6 +34,7 @@ const AttendancePage = () => {
             isCheckedIn={isCheckedIn}
             onCheckIn={() => dispatch(handleCheckIn(userId))}
             onCheckOut={() => dispatch(handleCheckOut(userId))}
+            disabled={!userId}
           />
         </div>
 
