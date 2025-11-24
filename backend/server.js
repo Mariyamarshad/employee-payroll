@@ -8,6 +8,7 @@ const AuthRouter = require("./routes/commonRoutes/AuthRoutes")
 const employeeRoutes = require("./routes/adminROutes/employeeRoutes")
 const attendanceRoutes = require("./routes/employeeRoutes/attendanceRoutes");
 const { scheduleAttendanceJob } = require("./cron/attendanceJob");
+const requestsRouter = require("./routes/commonRoutes/requests")
 
 const app = express();
 app.use(cookieParser());
@@ -24,6 +25,7 @@ app.use("/auth", AuthRouter);
 app.use("/admin", employeeRoutes)
 app.use("/attendance", attendanceRoutes)
 scheduleAttendanceJob()
+app.use("/api/requests", requestsRouter)
 
 const PORT = process.env.PORT
 
