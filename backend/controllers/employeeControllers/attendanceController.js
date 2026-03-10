@@ -2,15 +2,9 @@ const Attendance = require("../../models/attendanceModel");
 const Employee = require("../../models/userModel");
 const moment = require("moment");
 
-const SHIFT_TIMES = {
-  day: { start: "09:00 AM", end: "05:00 PM", halfDayHours: 4.5 },
-  night: { start: "08:00 PM", end: "04:00 AM", halfDayHours: 4.5 },
-};
-
 const checkIn = async (req, res) => {
   try {
     const { employeeId } = req.body;
-    const shiftType = req.shiftType || "day";
     const date = moment().format("YYYY-MM-DD");
     const now = moment();
 
@@ -26,29 +20,18 @@ const checkIn = async (req, res) => {
       return res.status(400).json({ message: "Already checked in today." });
     }
 
-    const shiftStart = moment(SHIFT_TIMES[shiftType].start, "hh:mm A");
-    const shiftEnd = moment(SHIFT_TIMES[shiftType].end, "hh:mm A");
+    const checkinStart = moment("09:00 AM", "hh:mm A");
+    const checkinEnd = moment("11:00 AM", "hh:mm A");
 
-    if (shiftType === "night") shiftEnd.add(1, "day");
-
-    if (now.isBefore(shiftStart)) {
-      return res.status(403).json({
-        message: `You can check in only after ${SHIFT_TIMES[shiftType].start}`,
-      });
-    }
-
-    if (now.isAfter(shiftEnd)) {
-      return res.status(403).json({ message: "Shift hours ended!" });
-    }
-
-    const gracePeriod = moment(shiftStart).add(10, "minutes");
     let status = "Present";
-    if (now.isAfter(gracePeriod)) status = "Late";
+
+    if (now.isAfter(checkinEnd)) {
+      status = "Late"
+    }
 
     const attendance = await Attendance.create({
       employeeId,
       date,
-      shiftType,
       checkIn: now.format("hh:mm A"),
       status,
     });
@@ -62,10 +45,10 @@ const checkIn = async (req, res) => {
 const checkOut = async (req, res) => {
   try {
     const { employeeId } = req.body;
-    const shiftType = req.shiftType || "day";
     const date = moment().format("YYYY-MM-DD");
 
     const attendance = await Attendance.findOne({ employeeId, date });
+
     if (!attendance || !attendance.checkIn) {
       return res.status(400).json({ message: "No check-in today" });
     }
@@ -77,40 +60,34 @@ const checkOut = async (req, res) => {
     const checkInTime = moment(attendance.checkIn, "hh:mm A");
     let checkOutTime = moment(now.format("hh:mm A"), "hh:mm A");
 
-    if (
-      attendance.shiftType === "night" &&
-      checkOutTime.isBefore(checkInTime)
-    ) {
-      checkOutTime.add(1, "day");
-    }
+    if (checkOutTime.isBefore(checkInTime)) checkOutTime.add(1, "day");
 
     const duration = moment.duration(checkOutTime.diff(checkInTime));
+
     const totalHours = parseFloat(duration.asHours().toFixed(2));
     attendance.checkOut = now.format("hh:mm A");
     attendance.totalHours = totalHours;
 
-    const standardHours = 9;
-    const halfDayMin = 4.5;
+    const REQUIRED_HOURS = 9;
+    const HALF_DAY_HOURS = 4.5;
+    const OVERTIME_START = 9;
 
-    if (totalHours < halfDayMin) {
-      attendance.status = "Absent";
-      attendance.isHalfDay = false;
-      attendance.overtimeHours = 0;
-    } else if (totalHours < standardHours) {
+     if (totalHours < HALF_DAY_HOURS) {
       attendance.status = "Half Day";
       attendance.isHalfDay = true;
       attendance.overtimeHours = 0;
-    } else if (totalHours === standardHours) {
-      attendance.status = "Present";
+    } else if (totalHours < REQUIRED_HOURS) {
+      attendance.status = "Early Leave";
       attendance.isHalfDay = false;
       attendance.overtimeHours = 0;
-    } else if (totalHours > standardHours) {
-      attendance.status = "Overtime";
+    } else {
+      attendance.status = "Present";
       attendance.isHalfDay = false;
-      attendance.overtimeHours = parseFloat(
-        (totalHours - standardHours).toFixed(2)
-      );
     }
+
+     attendance.overtimeHours = totalHours > OVERTIME_START
+      ? parseFloat((totalHours - OVERTIME_START).toFixed(2))
+      : 0;
 
     await attendance.save();
     res.status(200).json({ message: "Checked out!", attendance });
@@ -199,7 +176,6 @@ const getAllAttendance = async (req, res) => {
   try {
     const { employeeId } = req.params;
 
-    // 1️⃣ Find employee to get joining date
     const employee = await Employee.findById(employeeId);
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
@@ -208,27 +184,36 @@ const getAllAttendance = async (req, res) => {
     const joiningDate = moment(employee.joiningDate);
     const today = moment();
 
-    // 2️⃣ If employee joins in the future
     if (joiningDate.isAfter(today)) {
       return res.status(200).json({ success: true, attendance: [] });
     }
 
-    // 3️⃣ Get all attendance records from joining date → today
+    // 1️⃣ Decide start date for attendance display
+    let startDate;
+
+    if (joiningDate.month() === today.month() && joiningDate.year() === today.year()) {
+      // Joined in current month → start from joining date
+      startDate = joiningDate.clone();
+    } else {
+      // Joined before this month → start from 1st of current month
+      startDate = today.clone().startOf("month");
+    }
+
+    // 2️⃣ Get all attendance records from startDate → today
     const records = await Attendance.find({
       employeeId,
       date: {
-        $gte: joiningDate.format("YYYY-MM-DD"),
+        $gte: startDate.format("YYYY-MM-DD"),
         $lte: today.format("YYYY-MM-DD"),
       },
     }).sort({ date: -1 });
 
-    // 4️⃣ Map records by date for quick lookup
     const recordMap = {};
     records.forEach((r) => (recordMap[r.date] = r));
 
-    // 5️⃣ Build full list of working days
+    // 3️⃣ Build full list of working days
     const allDays = [];
-    for (let d = moment(joiningDate); d.isSameOrBefore(today); d.add(1, "day")) {
+    for (let d = startDate.clone(); d.isSameOrBefore(today); d.add(1, "day")) {
       const dateStr = d.format("YYYY-MM-DD");
       const day = d.day();
       if (day === 0 || day === 6) continue; // skip weekends
@@ -236,7 +221,6 @@ const getAllAttendance = async (req, res) => {
       if (recordMap[dateStr]) {
         const record = recordMap[dateStr];
 
-        // ✅ Calculate total display
         let totalDisplay = "--";
 
         if (
@@ -244,7 +228,6 @@ const getAllAttendance = async (req, res) => {
           record.checkIn &&
           (!record.checkOut || record.checkOut === "--")
         ) {
-          // 🕒 Employee checked in but not checked out → calculate till now
           const checkInTime = moment(record.checkIn, "hh:mm A");
           const currentTime = moment();
           const diffHours = moment.duration(currentTime.diff(checkInTime)).asHours();
@@ -252,7 +235,6 @@ const getAllAttendance = async (req, res) => {
           const m = Math.round((diffHours - h) * 60);
           totalDisplay = `${h}h ${m}m`;
         } else if (record.totalHours && record.totalHours > 0) {
-          // Normal case: already checked out
           const hours = Math.floor(record.totalHours);
           const minutes = Math.round((record.totalHours - hours) * 60);
           totalDisplay = `${hours}h ${minutes}m`;
@@ -282,10 +264,8 @@ const getAllAttendance = async (req, res) => {
       }
     }
 
-    // 6️⃣ Sort latest → oldest
     allDays.sort((a, b) => (a.date < b.date ? 1 : -1));
 
-    // 7️⃣ Send response
     res.status(200).json({
       success: true,
       attendance: allDays,
@@ -294,6 +274,7 @@ const getAllAttendance = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 

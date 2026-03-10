@@ -10,11 +10,6 @@ const attendanceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  shiftType: {
-    type: String,
-    enum: ["day", "night"],
-    default: "day",
-  },
   checkIn: {
     type: String,
   },
